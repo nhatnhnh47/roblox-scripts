@@ -1,0 +1,54 @@
+-- Roblox Lag Reducer Script
+-- Author: YourNameHere
+-- Description: Optimizes client performance by removing unnecessary effects.
+-- Safe to use with KRNL, Fluxus, etc.
+
+pcall(function()
+    -- Lighting optimization
+    local Lighting = game:GetService("Lighting")
+    Lighting.GlobalShadows = false
+    Lighting.FogEnd = 1e10
+    Lighting.Brightness = 1
+    Lighting.OutdoorAmbient = Color3.new(0.5, 0.5, 0.5)
+    Lighting.Technology = Enum.Technology.Compatibility
+
+    -- Disable unnecessary visual effects
+    for _, obj in ipairs(game:GetDescendants()) do
+        if obj:IsA("ParticleEmitter") or obj:IsA("Trail") then
+            obj.Enabled = false
+        elseif obj:IsA("Explosion") then
+            obj.BlastPressure = 0
+            obj.BlastRadius = 0
+        elseif obj:IsA("Fire") or obj:IsA("Smoke") then
+            obj.Enabled = false
+        elseif obj:IsA("Decal") or obj:IsA("Texture") then
+            obj.Transparency = 1
+        end
+    end
+
+    -- Remove grass, bushes, etc.
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if obj.Name:lower():find("grass") or obj.Name:lower():find("bush") or obj.Name:lower():find("tree") then
+            obj:Destroy()
+        end
+    end
+
+    -- Mute all sounds (optional)
+    for _, sound in ipairs(game:GetDescendants()) do
+        if sound:IsA("Sound") then
+            sound.Volume = 0
+        end
+    end
+
+    -- Reduce rendering quality
+    if settings().Rendering then
+        settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+    end
+
+    -- Disable terrain decoration (grass, etc.)
+    if sethiddenproperty then
+        sethiddenproperty(workspace, "TerrainDecoration", false)
+    end
+
+    print("[✔] Lag reducer script loaded successfully.")
+end)
