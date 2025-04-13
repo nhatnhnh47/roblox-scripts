@@ -1,0 +1,24 @@
+-- Roblox HTTP Service to make requests to external APIs
+local HttpService = game:GetService("HttpService")
+
+-- Replace <YourGameID> with the actual game ID you want to query.
+local apiUrl = "https://api.roblox.com/servers/<YourGameID>/info" -- Placeholder URL, change according to API details.
+
+-- Function to fetch server data and filter servers with fewer players
+local function fetchServerList()
+    -- Make an HTTP request to the API
+    local response = HttpService:GetAsync(apiUrl)
+    
+    -- Parse the response into a Lua table
+    local serverData = HttpService:JSONDecode(response)
+    
+    -- Loop through the servers and print those with fewer than 10 players
+    for _, server in pairs(serverData) do
+        if server.playerCount < 10 then  -- Filter servers with less than 10 players
+            print("Server ID: " .. server.id .. " | Player Count: " .. server.playerCount)
+        end
+    end
+end
+
+-- Call the function to fetch and display the list of servers
+fetchServerList()
