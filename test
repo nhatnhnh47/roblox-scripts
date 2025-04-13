@@ -1,0 +1,90 @@
+-- Tải thư viện
+local HttpService = game:GetService("HttpService")
+local player = game.Players.LocalPlayer
+
+-- Cấu hình script
+local farmVehicle = "Sedan"  -- Chọn loại xe bạn muốn farm
+local deliveryRoute = "AutoDelivery"  -- Tự động giao hàng ở các điểm đã chọn
+
+-- Kiểm tra trạng thái xe và người chơi
+local function checkPlayerStatus()
+    if player.Character == nil then
+        warn("Người chơi chưa xuất hiện!")
+        return false
+    end
+    if player.Character:FindFirstChild("HumanoidRootPart") == nil then
+        warn("Không tìm thấy vị trí người chơi!")
+        return false
+    end
+    return true
+end
+
+-- Tự động di chuyển xe đến các điểm farm
+local function autoFarm()
+    if not checkPlayerStatus() then return end
+    local vehicle = game.Workspace:FindFirstChild(farmVehicle)
+    if vehicle == nil then
+        warn("Không tìm thấy xe: " .. farmVehicle)
+        return
+    end
+
+    -- Di chuyển xe tự động đến các vị trí farm
+    local targetPosition = Vector3.new(1000, 0, 500)  -- Tùy chỉnh vị trí farm
+
+    -- Di chuyển xe đến vị trí farm
+    vehicle:SetPrimaryPartCFrame(CFrame.new(targetPosition))
+    print("Đang di chuyển xe đến vị trí farm...")
+end
+
+-- Tự động giao hàng đến các điểm yêu cầu
+local function autoDelivery()
+    if not checkPlayerStatus() then return end
+    local deliveryPoint = game.Workspace:FindFirstChild(deliveryRoute)
+    if deliveryPoint == nil then
+        warn("Không tìm thấy điểm giao hàng!")
+        return
+    end
+
+    -- Tự động giao hàng đến điểm giao
+    local vehicle = game.Workspace:FindFirstChild(farmVehicle)
+    if vehicle == nil then
+        warn("Không tìm thấy xe!")
+        return
+    end
+
+    -- Di chuyển xe đến điểm giao
+    vehicle:SetPrimaryPartCFrame(CFrame.new(deliveryPoint.Position))
+    print("Đang di chuyển đến điểm giao hàng...")
+end
+
+-- Tính năng ESP để theo dõi các đối thủ và điểm quan trọng
+local function esp()
+    local espFrame = Instance.new("Frame")
+    espFrame.Size = UDim2.new(0, 200, 0, 50)
+    espFrame.Position = UDim2.new(0.5, -100, 0, 10)
+    espFrame.BackgroundTransparency = 0.5
+    espFrame.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    espFrame.Parent = game.CoreGui
+
+    local textLabel = Instance.new("TextLabel")
+    textLabel.Text = "ESP: Đang theo dõi đối thủ..."
+    textLabel.Size = UDim2.new(1, 0, 1, 0)
+    textLabel.BackgroundTransparency = 1
+    textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    textLabel.Parent = espFrame
+end
+
+-- Chạy tự động farm mỗi 5 giây
+while true do
+    autoFarm()
+    wait(5)  -- Chờ 5 giây trước khi farm lại
+
+    -- Kiểm tra và giao hàng nếu có yêu cầu
+    if player.leaderstats:FindFirstChild("Delivery") then
+        autoDelivery()
+    end
+
+    -- ESP để theo dõi đối thủ và điểm quan trọng
+    esp()
+    wait(5)
+end
