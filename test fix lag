@@ -1,0 +1,85 @@
+--// Tạo GUI chính
+local gui = Instance.new("ScreenGui", game.CoreGui)
+local label = Instance.new("TextLabel", gui)
+label.Size = UDim2.new(0, 250, 0, 25)
+label.Position = UDim2.new(0, 10, 0, 10)
+label.BackgroundTransparency = 0.4
+label.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+label.TextColor3 = Color3.fromRGB(0, 255, 0)
+label.Font = Enum.Font.SourceSansBold
+label.TextSize = 18
+label.TextXAlignment = Enum.TextXAlignment.Left
+label.Text = "⏳ Đang tàng hình..."
+
+--// Nút Bật/Tắt FPS và Ping
+local fpsPingToggle = Instance.new("TextButton", gui)
+fpsPingToggle.Size = UDim2.new(0, 100, 0, 30)
+fpsPingToggle.Position = UDim2.new(0, 10, 0, 40)
+fpsPingToggle.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+fpsPingToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+fpsPingToggle.Text = "Bật FPS/Ping"
+fpsPingToggle.Font = Enum.Font.SourceSansBold
+fpsPingToggle.TextSize = 14
+
+--// Biến điều khiển bật/tắt FPS/Ping
+local isFpsPingVisible = false
+fpsPingToggle.MouseButton1Click:Connect(function()
+    isFpsPingVisible = not isFpsPingVisible
+    if isFpsPingVisible then
+        fpsPingToggle.Text = "Tắt FPS/Ping"
+    else
+        fpsPingToggle.Text = "Bật FPS/Ping"
+    end
+end)
+
+--// Ẩn toàn bộ thế giới (trừ nhân vật)
+game:GetService("RunService").Heartbeat:Connect(function()
+    for _, v in pairs(workspace:GetChildren()) do
+        if v:IsA("BasePart") and v.Parent ~= game.Players.LocalPlayer.Character then
+            v.Transparency = 1
+            v.CanCollide = false
+        elseif v:IsA("Model") then
+            if v ~= game.Players.LocalPlayer.Character then
+                v:Destroy()
+            end
+        end
+    end
+end)
+
+--// Cập nhật FPS và Ping mỗi 10 giây (nếu bật)
+local Stats = game:GetService("Stats")
+local PingStat = Stats:FindFirstChild("PerformanceStats"):FindFirstChild("Ping")
+local HttpService = game:GetService("HttpService")
+local lastTick = tick()
+
+spawn(function()
+    while true do
+        wait(10)
+
+        -- Đo Ping
+        local ping = PingStat and math.floor(PingStat:GetValue()) or 0
+
+        -- Đo FPS trung bình
+        local count = 0
+        local RunService = game:GetService("RunService")
+        local start = tick()
+        local connection
+
+        connection = RunService.RenderStepped:Connect(function()
+            count += 1
+            if tick() - start >= 1 then
+                connection:Disconnect()
+            end
+        end)
+
+        repeat wait() until not connection.Connected
+        local fps = count
+
+        -- Cập nhật TextLabel nếu FPS/Ping bật
+        if isFpsPingVisible then
+            label.Text = string.format("🎮 FPS: %d | 📶 Ping: %d ms", fps, ping)
+        else
+            label.Text = "⏳ Đang tàng hình..."
+        end
+    end
+end)
