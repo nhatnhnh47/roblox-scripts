@@ -8,7 +8,14 @@ fpsLabel.Position = UDim2.new(0, 5, 0, 0)
 fpsLabel.Font = Enum.Font.Code
 fpsLabel.TextSize = 14
 fpsLabel.TextXAlignment = Enum.TextXAlignment.Left
-fpsLabel.Parent = frame
+
+-- Đảm bảo frame tồn tại trước khi gán Parent
+if frame and frame:IsA("GuiObject") then
+    fpsLabel.Parent = frame
+else
+    warn("Frame không tồn tại hoặc không hợp lệ")
+end
+
 -- 📈 FPS Tracker
 spawn(function()
     local last = tick()
@@ -22,6 +29,6 @@ spawn(function()
             frames = 0
             last = now
         end
-        task.wait()
+        task.wait(0.05) -- Chờ 50ms để giảm tải hệ thống
     end
-end)https://assets.grammarly.com/emoji/v1/1f455.svg
+end)
