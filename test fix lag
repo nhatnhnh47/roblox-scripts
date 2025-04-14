@@ -21,6 +21,16 @@ fpsPingToggle.Text = "Bật FPS/Ping"
 fpsPingToggle.Font = Enum.Font.SourceSansBold
 fpsPingToggle.TextSize = 14
 
+--// Nút Tắt Toàn Bộ (Ẩn GUI và Tắt chức năng)
+local stopButton = Instance.new("TextButton", gui)
+stopButton.Size = UDim2.new(0, 100, 0, 30)
+stopButton.Position = UDim2.new(0, 120, 0, 40)
+stopButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+stopButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+stopButton.Text = "Tắt"
+stopButton.Font = Enum.Font.SourceSansBold
+stopButton.TextSize = 14
+
 --// Biến điều khiển bật/tắt FPS/Ping
 local isFpsPingVisible = false
 fpsPingToggle.MouseButton1Click:Connect(function()
@@ -32,28 +42,24 @@ fpsPingToggle.MouseButton1Click:Connect(function()
     end
 end)
 
---// Ẩn toàn bộ thế giới (trừ nhân vật)
-game:GetService("RunService").Heartbeat:Connect(function()
-    for _, v in pairs(workspace:GetChildren()) do
-        if v:IsA("BasePart") and v.Parent ~= game.Players.LocalPlayer.Character then
-            v.Transparency = 1
-            v.CanCollide = false
-        elseif v:IsA("Model") then
-            if v ~= game.Players.LocalPlayer.Character then
-                v:Destroy()
-            end
-        end
-    end
+--// Biến điều khiển tắt toàn bộ
+local isScriptActive = true
+stopButton.MouseButton1Click:Connect(function()
+    isScriptActive = false
+    label.Visible = false
+    fpsPingToggle.Visible = false
+    stopButton.Visible = false
+    gui:Destroy()  -- Hủy GUI khi tắt
 end)
 
---// Cập nhật FPS và Ping mỗi 10 giây (nếu bật)
+--// Cập nhật FPS và Ping mỗi 10 giây (nếu bật và script vẫn hoạt động)
 local Stats = game:GetService("Stats")
 local PingStat = Stats:FindFirstChild("PerformanceStats"):FindFirstChild("Ping")
 local HttpService = game:GetService("HttpService")
 local lastTick = tick()
 
 spawn(function()
-    while true do
+    while isScriptActive do
         wait(10)
 
         -- Đo Ping
