@@ -1,0 +1,125 @@
+local player = game.Players.LocalPlayer
+local gui = Instance.new("ScreenGui")
+gui.Name = "LagUI"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+-- Frame
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 200, 0, 120)
+frame.Position = UDim2.new(0, 20, 0, 100)
+frame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+frame.BorderSizePixel = 0
+frame.Parent = gui
+
+-- Layout
+local layout = Instance.new("UIListLayout")
+layout.Padding = UDim.new(0, 5)
+layout.Parent = frame
+
+-- Title
+local title = Instance.new("TextLabel")
+title.Text = "🧹 Lag Reducer"
+title.TextColor3 = Color3.new(1, 1, 1)
+title.BackgroundTransparency = 1
+title.Size = UDim2.new(1, 0, 0, 30)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 18
+title.Parent = frame
+
+-- Tick Indicator
+local tickLabel = Instance.new("TextLabel")
+tickLabel.Text = ""
+tickLabel.TextColor3 = Color3.new(0, 1, 0)
+tickLabel.BackgroundTransparency = 1
+tickLabel.Size = UDim2.new(1, 0, 0, 20)
+tickLabel.Font = Enum.Font.GothamSemibold
+tickLabel.TextSize = 16
+tickLabel.TextXAlignment = Enum.TextXAlignment.Left
+tickLabel.Parent = frame
+
+-- Reduce Lag Button
+local lagButton = Instance.new("TextButton")
+lagButton.Text = "Reduce Lag"
+lagButton.Size = UDim2.new(1, 0, 0, 40)
+lagButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+lagButton.TextColor3 = Color3.new(1, 1, 1)
+lagButton.Font = Enum.Font.Gotham
+lagButton.TextSize = 16
+lagButton.Parent = frame
+
+-- FPS Display
+local fpsLabel = Instance.new("TextLabel")
+fpsLabel.Text = "FPS: ..."
+fpsLabel.TextColor3 = Color3.new(1, 1, 1)
+fpsLabel.BackgroundTransparency = 1
+fpsLabel.Size = UDim2.new(1, 0, 0, 20)
+fpsLabel.Font = Enum.Font.Code
+fpsLabel.TextSize = 14
+fpsLabel.TextXAlignment = Enum.TextXAlignment.Left
+fpsLabel.Parent = frame
+
+-- 🧹 Lag Reducer Function
+lagButton.MouseButton1Click:Connect(function()
+    pcall(function()
+        local Lighting = game:GetService("Lighting")
+        Lighting.GlobalShadows = false
+        Lighting.FogEnd = 1e10
+        Lighting.Brightness = 1
+        Lighting.OutdoorAmbient = Color3.new(0.5, 0.5, 0.5)
+        Lighting.Technology = Enum.Technology.Compatibility
+
+        for _, obj in ipairs(game:GetDescendants()) do
+            if obj:IsA("ParticleEmitter") or obj:IsA("Trail") then
+                obj.Enabled = false
+            elseif obj:IsA("Explosion") then
+                obj.BlastPressure = 0
+                obj.BlastRadius = 0
+            elseif obj:IsA("Fire") or obj:IsA("Smoke") then
+                obj.Enabled = false
+            elseif obj:IsA("Decal") or obj:IsA("Texture") then
+                obj.Transparency = 1
+            end
+        end
+
+        for _, obj in ipairs(workspace:GetDescendants()) do
+            if obj.Name:lower():find("grass") or obj.Name:lower():find("bush") or obj.Name:lower():find("tree") then
+                obj:Destroy()
+            end
+        end
+
+        for _, sound in ipairs(game:GetDescendants()) do
+            if sound:IsA("Sound") then
+                sound.Volume = 0
+            end
+        end
+
+        if settings().Rendering then
+            settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+        end
+
+        if sethiddenproperty then
+            sethiddenproperty(workspace, "TerrainDecoration", false)
+        end
+
+        lagButton.Text = "✅ Reduced!"
+        tickLabel.Text = "✔ Lag Reducer is ON"
+    end)
+end)
+
+-- 📈 FPS counter
+spawn(function()
+    local last = tick()
+    local frames = 0
+    while true do
+        frames += 1
+        local now = tick()
+        if now - last >= 0.5 then
+            local fps = math.floor(frames / (now - last))
+            fpsLabel.Text = "FPS: " .. fps
+            frames = 0
+            last = now
+        end
+        task.wait()
+    end
+end)
