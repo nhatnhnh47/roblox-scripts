@@ -1,34 +1,35 @@
--- FPS Display
+local player = game.Players.LocalPlayer
+local gui = Instance.new("ScreenGui")
+gui.Name = "FPSDisplay"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
 local fpsLabel = Instance.new("TextLabel")
 fpsLabel.Text = "FPS: ..."
+fpsLabel.Size = UDim2.new(0, 100, 0, 25)
+fpsLabel.Position = UDim2.new(0, 10, 0, 10)
+fpsLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+fpsLabel.BackgroundTransparency = 0.3
 fpsLabel.TextColor3 = Color3.new(1, 1, 1)
-fpsLabel.BackgroundTransparency = 1
-fpsLabel.Size = UDim2.new(0.4, 0, 1, 0)
-fpsLabel.Position = UDim2.new(0, 5, 0, 0)
 fpsLabel.Font = Enum.Font.Code
 fpsLabel.TextSize = 14
 fpsLabel.TextXAlignment = Enum.TextXAlignment.Left
+fpsLabel.Parent = gui
 
--- Đảm bảo frame tồn tại trước khi gán Parent
-if frame and frame:IsA("GuiObject") then
-    fpsLabel.Parent = frame
-else
-    warn("Frame không tồn tại hoặc không hợp lệ")
-end
-
--- 📈 FPS Tracker
+-- FPS counter logic
 spawn(function()
-    local last = tick()
-    local frames = 0
-    while true do
-        frames += 1
-        local now = tick()
-        if now - last >= 0.5 then
-            local fps = math.floor(frames / (now - last))
-            fpsLabel.Text = "FPS: " .. fps
-            frames = 0
-            last = now
-        end
-        task.wait(0.05) -- Chờ 50ms để giảm tải hệ thống
-    end
+	local lastTime = tick()
+	local frameCount = 0
+
+	while true do
+		frameCount += 1
+		local now = tick()
+		if now - lastTime >= 0.5 then
+			local fps = math.floor(frameCount / (now - lastTime))
+			fpsLabel.Text = "FPS: " .. tostring(fps)
+			frameCount = 0
+			lastTime = now
+		end
+		task.wait()
+	end
 end)
