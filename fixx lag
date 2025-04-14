@@ -1,62 +1,66 @@
--- fix_lag_script.lua
+--// Tạo GUI chính
+local gui = Instance.new("ScreenGui", game.CoreGui)
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0, 250, 0, 50)
+frame.Position = UDim2.new(0, 10, 0, 10)
+frame.BackgroundTransparency = 0.4
+frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 
---// Notification
-pcall(function()
-    game.StarterGui:SetCore("SendNotification", {
-        Title = "✅ FIX LAG ĐÃ KÍCH HOẠT",
-        Text = "Script tối ưu hiệu suất!",
-        Duration = 5
-    })
+--// Tạo label để hiển thị FPS và Ping
+local label = Instance.new("TextLabel", frame)
+label.Size = UDim2.new(1, 0, 1, 0)
+label.TextColor3 = Color3.fromRGB(255, 255, 255)
+label.Font = Enum.Font.SourceSansBold
+label.TextSize = 18
+label.Text = "FPS: -- | Ping: --"
+label.TextXAlignment = Enum.TextXAlignment.Left
+label.TextYAlignment = Enum.TextYAlignment.Center
+
+--// Cải thiện FPS nhẹ bằng cách giảm các chi tiết không cần thiết
+game:GetService("Lighting").GlobalShadows = false  -- Tắt bóng đổ
+game:GetService("GraphicsSettings"):SetQualityLevel(2)  -- Giảm chất lượng đồ họa
+
+--// Di chuyển GUI
+local dragging, dragInput, dragStart, startPos
+local function updateDrag(input)
+    local delta = input.Position - dragStart
+    frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+
+frame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = frame.Position
+        input.Changed:Connect(function()
+            if dragging then
+                updateDrag(input)
+            end
+        end)
+    end
 end)
 
---// Cấu hình cơ bản
-setfpscap(60)
-settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
-
---// Tắt hiệu ứng ánh sáng
-local Lighting = game:GetService("Lighting")
-Lighting.GlobalShadows = false
-Lighting.FogEnd = 1e10
-Lighting.Brightness = 1
-for _, v in ipairs(Lighting:GetDescendants()) do
-    if v:IsA("PostEffect") then
-        v.Enabled = false
+frame.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
     end
-end
+end)
 
---// Xoá hiệu ứng Particles
-for _, v in ipairs(workspace:GetDescendants()) do
-    if v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Smoke") or v:IsA("Fire") then
-        v:Destroy()
-    end
-end
-
---// Tạo UI hiển thị FPS + Ping
-local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
-ScreenGui.Name = "FixLagDisplay"
-
-local Label = Instance.new("TextLabel", ScreenGui)
-Label.Size = UDim2.new(0, 250, 0, 25)
-Label.Position = UDim2.new(0, 10, 0, 10)
-Label.BackgroundTransparency = 0.4
-Label.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-Label.TextColor3 = Color3.fromRGB(0, 255, 0)
-Label.Font = Enum.Font.SourceSansBold
-Label.TextSize = 18
-Label.TextXAlignment = Enum.TextXAlignment.Left
-Label.Text = "Loading..."
-
---// Cập nhật FPS và Ping
-local RunService = game:GetService("RunService")
+--// Hiển thị FPS và Ping
 local Stats = game:GetService("Stats")
 local PingStat = Stats:FindFirstChild("PerformanceStats"):FindFirstChild("Ping")
 
-local lastTick = tick()
-RunService.Heartbeat:Connect(function()
-    local currentTick = tick()
-    local fps = math.floor(1 / (currentTick - lastTick))
-    lastTick = currentTick
+spawn(function()
+    while true do
+        wait(1)  -- Mỗi 1 giây
+        local ping = PingStat and math.floor(PingStat:GetValue()) or 0
+        local fps = math.floor(1 / wait())  -- Đo FPS trung bình mỗi giây
 
-    local ping = PingStat and math.floor(PingStat:GetValue()) or 0
-    Label.Text = string.format("🎮 FPS: %d | 📶 Ping: %d ms", fps, ping)
+        label.Text = string.format("FPS: %d | Ping: %d ms", fps, ping)
+    end
+end)
+
+--// Đảm bảo script hoạt động liên tục
+game:GetService("RunService").Heartbeat:Connect(function()
+    -- Thực hiện các tác vụ khác nếu cần
 end)
